@@ -3,14 +3,19 @@ local M = {}
 M.defaults = {
 	themes = {},
 	default = nil,
-	keymap = "<leader>ctt",
+	keymap = "<leader>ut",
 	plugins = {
 		modicator = false,
 		lualine = false,
 	},
+
 	custom_logic = false,
+
 	logic_fn = function()
-		return M.defaults.themes[1] and M.defaults.themes[1].name or "default"
+		if M.options and M.options.themes and #M.options.themes > 0 then
+			return M.options.themes[1].name
+		end
+		return nil
 	end,
 }
 

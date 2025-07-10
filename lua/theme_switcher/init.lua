@@ -42,21 +42,42 @@ function M.setup(opts)
 	config.setup(opts)
 	local cfg = config.options
 
+	local initial_theme_name
 	local initial_colorscheme
 
-	if cfg.default then
+	if cfg.custom_logic and type(cfg.logic_fn) == "function" then
+		local success, result = pcall(cfg.logic_fn)
+		if success and result then
+			initial_theme_name = result
+		else
+			vim.notify("Theme Switcher: custom logic function failed or returned nil.", vim.log.levels.WARN)
+		end
+	elseif cfg.default then
+		initial_theme_name = cfg.default
+	end
+
+	if initial_theme_name then
+		local found = false
 		for i, theme in ipairs(cfg.themes) do
-			if theme.name == cfg.default then
+			if theme.name == initial_theme_name then
 				current_theme_index = i
 				initial_colorscheme = theme.colorscheme or theme.name
+				found = true
 				break
 			end
+		end
+		if not found then
+			vim.notify(
+				"Theme Switcher: Initial theme '" .. initial_theme_name .. "' not found in themes list.",
+				vim.log.levels.WARN
+			)
 		end
 	end
 
 	if not initial_colorscheme and cfg.themes and #cfg.themes > 0 then
 		local first_theme = cfg.themes[1]
 		initial_colorscheme = first_theme.colorscheme or first_theme.name
+		current_theme_index = 1
 	end
 
 	if initial_colorscheme then
